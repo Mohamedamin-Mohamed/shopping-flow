@@ -1,6 +1,7 @@
 package com.example.shoppingflow.controller;
 
 import com.example.shoppingflow.DTO.Product;
+import com.example.shoppingflow.DTO.ProductPatchRequest;
 import com.example.shoppingflow.service.CatalogService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.websocket.server.PathParam;
@@ -12,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/catalog")
@@ -31,7 +31,7 @@ public class Catalog {
     }
 
     @GetMapping("/{tsin}")
-    public ResponseEntity<CompletableFuture<Product>> getProduct(@PathVariable String tsin) throws ExecutionException, InterruptedException, JsonProcessingException {
+    public ResponseEntity<CompletableFuture<Product>> getProduct(@PathVariable String tsin) {
         logger.info("Getting product catalog of tsin {}", tsin);
         return ResponseEntity.ok(catalogService.getProduct(tsin));
     }
@@ -43,9 +43,15 @@ public class Catalog {
     }
 
     @PutMapping
-    public ResponseEntity<CompletableFuture<Product>> updateProduct(@RequestBody Product product) throws ExecutionException, JsonProcessingException, InterruptedException {
+    public ResponseEntity<CompletableFuture<Product>> updateProduct(@RequestBody Product product) throws JsonProcessingException {
         logger.info("Updating product of tsin {}", product.getTsin());
         return ResponseEntity.ok(catalogService.updateProduct(product));
+    }
+
+    @PatchMapping("/{tsin}")
+    public ResponseEntity<CompletableFuture<Product>> updateProductPartially(@PathVariable String tsin, @RequestBody ProductPatchRequest productPatchRequest) {
+        logger.info("Updating product with tsin {} partially", tsin);
+        return ResponseEntity.ok(catalogService.updateProductPartial(tsin, productPatchRequest));
     }
 
     @DeleteMapping("/{tsin}")

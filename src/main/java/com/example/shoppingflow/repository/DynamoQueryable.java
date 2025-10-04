@@ -1,6 +1,7 @@
 package com.example.shoppingflow.interfaces;
 
 import com.example.shoppingflow.DTO.Product;
+import com.example.shoppingflow.DTO.ProductPatchRequest;
 import com.example.shoppingflow.model.Catalog;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import software.amazon.awssdk.enhanced.dynamodb.model.PagePublisher;
@@ -11,6 +12,8 @@ public interface DynamoQueryable {
     CompletableFuture<Void> addProduct(Product product) throws JsonProcessingException;
 
     CompletableFuture<Catalog> updateProduct(Product product) throws JsonProcessingException;
+
+    CompletableFuture<Catalog> updateProductPartial(String tsin, ProductPatchRequest productPatchRequest);
 
     CompletableFuture<Catalog> getProduct(String tsin);
 
