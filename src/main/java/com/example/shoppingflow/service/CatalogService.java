@@ -1,32 +1,27 @@
 package com.example.shoppingflow.service;
 
 import com.example.shoppingflow.DTO.Product;
+import com.example.shoppingflow.DTO.ProductPatchRequest;
 import com.example.shoppingflow.model.Catalog;
 import com.example.shoppingflow.repository.CatalogRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.enhanced.dynamodb.model.PagePublisher;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+
+import static com.example.shoppingflow.utils.Util.convertToProduct;
 
 @Service
 public class CatalogService {
     private final CatalogRepository catalogRepository;
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final com.example.shoppingflow.controller.Catalog catalog;
 
-    public CatalogService(CatalogRepository catalogRepository, com.example.shoppingflow.controller.Catalog catalog) {
+    public CatalogService(CatalogRepository catalogRepository) {
         this.catalogRepository = catalogRepository;
-        this.catalog = catalog;
     }
 
     public CompletableFuture<Void> addProduct(Product product) throws JsonProcessingException {
@@ -44,8 +39,19 @@ public class CatalogService {
         });
     }
 
-    public CompletableFuture<Product> updateProduct(Product product) throws JsonProcessingException, ExecutionException, InterruptedException {
+    public CompletableFuture<Product> updateProduct(Product product) throws JsonProcessingException {
         CompletableFuture<Catalog> catalogCompletableFuture = catalogRepository.updateProduct(product);
+        return catalogCompletableFuture.thenApply(catalog -> {
+            try {
+                return convertToProduct(catalog);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    public CompletableFuture<Product> updateProductPartial(String tsin, ProductPatchRequest productPatchRequest) {
+        CompletableFuture<Catalog> catalogCompletableFuture = catalogRepository.updateProductPartial(tsin, productPatchRequest);
         return catalogCompletableFuture.thenApply(catalog -> {
             try {
                 return convertToProduct(catalog);
@@ -59,7 +65,6 @@ public class CatalogService {
         PagePublisher<Catalog> catalogPagePublisher = catalogRepository.queryProducts(tsin, queryColumn);
         CompletableFuture<List<Product>> future = new CompletableFuture<>();
         List<Product> products = new ArrayList<>();
-
         catalogPagePublisher.items().subscribe(new Subscriber<>() {
             private Subscription subscription;
 
@@ -106,27 +111,4 @@ public class CatalogService {
         });
     }
 
-    private Product convertToProduct(Catalog catalog) throws JsonProcessingException {
-        Product product = new Product();
-        product.setTsin(catalog.getTsin());
-        product.setName(catalog.getName());
-        product.setPrice(catalog.getPrice());
-        product.setAttributes(catalog.getAttributes());
-        String imageInfo = convertToImageInfo(catalog);
-        product.setImageInfo(imageInfo);
-        return product;
-    }
-
-    private String convertToImageInfo(Catalog catalog) throws JsonProcessingException {
-        AttributeValue attributeValue = catalog.getImageInfo();
-        Map<String, AttributeValue> attributeValueMap = attributeValue.m();
-        Map<String, Object> objectMap = new HashMap<>();
-
-        for (Map.Entry<String, AttributeValue> entry : attributeValueMap.entrySet()) {
-            String key = entry.getKey();
-            AttributeValue value = entry.getValue();
-            objectMap.put(key, value.s());
-        }
-        return objectMapper.writeValueAsString(objectMap);
-    }
 }
