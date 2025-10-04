@@ -7,17 +7,31 @@ import java.time.Instant;
 
 @Entity(name = "inventory")
 public class Inventory {
-    @EmbeddedId
-    private InventoryId id;
+    public InventoryId getInventoryId() {
+        return inventoryId;
+    }
 
-    @Column(name = "tsin", unique = true)
-    private String tsin;
+    @EmbeddedId
+    private InventoryId inventoryId;
+
+    public long getReservedQuantity() {
+        return reservedQuantity;
+    }
+
+    public void setReservedQuantity(long reservedQuantity) {
+        this.reservedQuantity = reservedQuantity;
+    }
 
     private long totalQuantity;
-    private long reservedQuantity;
+
+    public long getTotalQuantity(){
+        return totalQuantity;
+    }
+
+    public long reservedQuantity;
 
     @Transient
-    private long getAvailableQuantity() {
+    public long getAvailableQuantity() {
         return totalQuantity - reservedQuantity;
     }
 
