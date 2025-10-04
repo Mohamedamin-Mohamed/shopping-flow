@@ -1,4 +1,4 @@
-package com.example.shoppingflow.interfaces;
+package com.example.shoppingflow.repository;
 
 import com.example.shoppingflow.DTO.Product;
 import com.example.shoppingflow.DTO.ProductPatchRequest;
