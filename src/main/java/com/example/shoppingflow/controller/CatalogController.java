@@ -16,11 +16,11 @@ import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/catalog")
-public class Catalog {
-    public Logger logger = LoggerFactory.getLogger(Catalog.class);
+public class CatalogController {
+    public Logger logger = LoggerFactory.getLogger(CatalogController.class);
     private final CatalogService catalogService;
 
-    public Catalog(CatalogService catalogService) {
+    public CatalogController(CatalogService catalogService) {
         this.catalogService = catalogService;
     }
 
