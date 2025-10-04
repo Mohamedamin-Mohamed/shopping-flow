@@ -22,7 +22,7 @@ public class InventoryInfo {
         this.reservedQuantity = reservedQuantity;
     }
 
-    public long getStoreId() {
+    public String getStoreId() {
         return storeId;
     }
 
