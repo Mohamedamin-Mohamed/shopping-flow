@@ -1,4 +1,4 @@
 package com.example.shoppingflow.DTO;
 
-public class TransferInventory {
+public record TransferInventory(String sendingStoreId, String receivingStoreID, String tsin, long quantity) {
 }
