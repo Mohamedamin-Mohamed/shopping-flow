@@ -24,7 +24,11 @@ public class Inventory {
 
     private long totalQuantity;
 
-    public long getTotalQuantity(){
+    public void setTotalQuantity(long totalQuantity) {
+        this.totalQuantity = totalQuantity;
+    }
+
+    public long getTotalQuantity() {
         return totalQuantity;
     }
 

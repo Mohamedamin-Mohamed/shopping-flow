@@ -24,5 +24,4 @@ public class InventoryId implements Serializable {
     public String getTsin() {
         return tsin;
     }
-
 }

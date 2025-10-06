@@ -1,5 +1,7 @@
 package com.example.shoppingflow.DTO;
 
 
-public record Item(String tsin, String addedAt, String quantity, String price) {
+import java.math.BigDecimal;
+
+public record Item(String tsin, String storeId, String addedAt, int quantity, BigDecimal price) {
 }

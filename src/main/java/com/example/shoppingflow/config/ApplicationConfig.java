@@ -3,9 +3,14 @@ package com.example.shoppingflow.config;
 import com.example.shoppingflow.property.AwsProperties;
 import com.example.shoppingflow.property.RedisProperties;
 import com.example.shoppingflow.property.UtilProperties;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.Dsl;
+import org.jetbrains.annotations.Async;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestTemplate;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
@@ -61,5 +66,10 @@ public class ApplicationConfig {
     @Bean
     DynamoDbEnhancedAsyncClient dynamoDbEnhancedClient() throws URISyntaxException {
         return DynamoDbEnhancedAsyncClient.builder().dynamoDbClient(dynamodbClient()).build();
+    }
+
+    @Bean
+    AsyncHttpClient asyncHttpClient(){
+        return Dsl.asyncHttpClient();
     }
 }

@@ -1,0 +1,5 @@
+package com.example.shoppingflow.DTO;
+
+public enum OrderStatus {
+    NEW, PENDING_PAYMENT, CONFIRMED, PROCESSING, SHIPPED, DELIVERED, CANCELLED, FAILED_RESERVATION, RETURNED
+}
