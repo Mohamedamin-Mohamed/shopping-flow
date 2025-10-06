@@ -33,6 +33,7 @@ dependencies {
 	implementation "software.amazon.awssdk:dynamodb"
 	implementation "software.amazon.awssdk:dynamodb-enhanced"
 	implementation "software.amazon.awssdk:utils"
+	implementation "org.asynchttpclient:async-http-client:3.0.+"
 	runtimeOnly 'org.postgresql:postgresql'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
