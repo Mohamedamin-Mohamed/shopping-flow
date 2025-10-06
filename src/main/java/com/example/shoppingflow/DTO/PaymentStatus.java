@@ -1,4 +1,5 @@
 package com.example.shoppingflow.DTO;
 
-public class PaymentStatus {
+public enum PaymentStatus {
+    PENDING, INITIATED, CONFIRMED, PROCESSING, FAILED, REFUNDED, EXPIRED, CANCELLED
 }
