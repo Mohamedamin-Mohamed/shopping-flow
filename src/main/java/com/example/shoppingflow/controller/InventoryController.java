@@ -1,7 +1,8 @@
 package com.example.shoppingflow.controller;
 
-import com.example.shoppingflow.DTO.InventoryId;
 import com.example.shoppingflow.DTO.InventoryInfo;
+import com.example.shoppingflow.DTO.InventoryTransferResponse;
+import com.example.shoppingflow.DTO.TransferInventory;
 import com.example.shoppingflow.model.Inventory;
 import com.example.shoppingflow.service.InventoryService;
 import org.slf4j.Logger;
@@ -29,36 +30,61 @@ public class InventoryController {
         return ResponseEntity.status(HttpStatus.CREATED).body(inventoryService.addInventory(inventoryInfo));
     }
 
-    @GetMapping
-    public ResponseEntity<CompletableFuture<Inventory>> getInventory(@RequestBody InventoryId inventoryId) {
-        logger.info("Getting inventory for store {} of product {}", inventoryId.getStoreId(), inventoryId.getTsin());
-        return ResponseEntity.ok(inventoryService.findInventory(inventoryId));
+    @GetMapping("/{storeId}/{tsin}")
+    public ResponseEntity<CompletableFuture<Inventory>> getInventory(@PathVariable String storeId,
+                                                                     @PathVariable String tsin) {
+        logger.info("Getting inventory for store {} of product {}", storeId, tsin);
+        return ResponseEntity.ok(inventoryService.findInventory(storeId, tsin));
     }
 
-    @GetMapping
-    public ResponseEntity<CompletableFuture<List<Inventory>>> getInventoryByTsin(@RequestParam String tsin) {
+    @GetMapping("/product/{tsin}")
+    public ResponseEntity<CompletableFuture<List<Inventory>>> getInventoryByTsin(@PathVariable String tsin) {
         logger.info("Getting inventory at all stores of product {}", tsin);
         return ResponseEntity.ok(inventoryService.findInventoryByTsin(tsin));
     }
 
-    @GetMapping
-    public ResponseEntity<CompletableFuture<List<Inventory>>> getInventoryByStoreId(@RequestParam String storeId) {
+    @GetMapping("/store/{storeId}")
+    public ResponseEntity<CompletableFuture<List<Inventory>>> getInventoryByStoreId(@PathVariable String storeId) {
         logger.info("Getting all inventory at store {}", storeId);
         return ResponseEntity.ok(inventoryService.findInventoryByStoreId(storeId));
     }
 
-    @PostMapping("/{tsin}/{storeId}/reserve")
-    public ResponseEntity<CompletableFuture<Inventory>> reserveInventory(@PathVariable String storeId, String tsin,
+    @PatchMapping("/{storeId}/{tsin}/reserve")
+    public ResponseEntity<CompletableFuture<Inventory>> reserveInventory(@PathVariable String storeId,
+                                                                         @PathVariable String tsin,
                                                                          @RequestParam long quantity) {
         logger.info("Reserving inventory for store {} of product {} and quantity {}", tsin, storeId, quantity);
-        return ResponseEntity.status(HttpStatus.CREATED).body(inventoryService.reserveInventory(storeId, tsin, quantity));
+        return ResponseEntity.ok(inventoryService.reserveInventory(storeId, tsin, quantity));
     }
 
-    @PostMapping("/{tsin}/{storeId}/unreserve")
-    public ResponseEntity<CompletableFuture<Inventory>> unreserveInventory(@PathVariable String storeId, String tsin,
+    @PatchMapping("/{storeId}/{tsin}/unreserve")
+    public ResponseEntity<CompletableFuture<Inventory>> unReserveInventory(@PathVariable String storeId,
+                                                                           @PathVariable String tsin,
                                                                            @RequestParam long quantity) {
-        logger.info("Unreserving inventory for store {} of product {} and quantity {}", storeId, tsin, quantity);
-        return ResponseEntity.status(HttpStatus.CREATED).body(inventoryService.unReserveInventory(storeId, tsin, quantity));
+        logger.info("Un-reserving inventory for store {} of product {} and quantity {}", storeId, tsin, quantity);
+        return ResponseEntity.ok(inventoryService.unReserveInventory(storeId, tsin, quantity));
+    }
+
+    @PostMapping("/{storeId}/{tsin}/purchase/confirm")
+    public ResponseEntity<CompletableFuture<Inventory>> confirmPurchase(@PathVariable String storeId,
+                                                                        @PathVariable String tsin,
+                                                                        @RequestParam long quantity) {
+        logger.info("Confirming purchase of {} units of product {} at store {}", quantity, tsin, storeId);
+        return ResponseEntity.ok(inventoryService.confirmPurchase(storeId, tsin, quantity));
+    }
+
+    @PatchMapping("/{storeId}/{tsin}/restock")
+    public ResponseEntity<CompletableFuture<Inventory>> restockItem(@PathVariable String storeId,
+                                                                    @PathVariable String tsin,
+                                                                    @RequestParam long quantity) {
+        logger.info("Restocking {} units of product {} at store {}", quantity, tsin, storeId);
+        return ResponseEntity.ok(inventoryService.restockItem(storeId, tsin, quantity));
+    }
+
+    @PatchMapping
+    public ResponseEntity<CompletableFuture<InventoryTransferResponse>> transferInventory(@RequestBody TransferInventory transferInventory) {
+        logger.info("Transferring inventory from store {} to store {} for product {}", transferInventory.sendingStoreId(), transferInventory.receivingStoreID(), transferInventory.tsin());
+        return ResponseEntity.ok(inventoryService.transferInventory(transferInventory));
     }
 
 }
