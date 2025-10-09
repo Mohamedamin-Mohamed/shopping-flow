@@ -11,4 +11,5 @@ import java.util.concurrent.CompletableFuture;
 public interface OrderRepository extends JpaRepository<Order, Long> {
     CompletableFuture<Order> saveOrder(Order order);
     CompletableFuture<Order> findByOrderId(UUID orderId);
+    CompletableFuture<Order> findByIdempotencyKey(String idempotencyKey);
 }
