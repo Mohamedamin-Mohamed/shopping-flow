@@ -5,6 +5,7 @@ import java.util.List;
 public class OrderRequest {
     private List<Item> items;
     private Address address;
+    private String idempotencyKey;
     private String paymentMethod;
     private String currency;
     private String pickupMode;
@@ -15,6 +16,10 @@ public class OrderRequest {
 
     public Address getAddress() {
         return address;
+    }
+
+    public String getIdempotencyKey(){
+        return idempotencyKey;
     }
 
     public String getPaymentMethod() {
