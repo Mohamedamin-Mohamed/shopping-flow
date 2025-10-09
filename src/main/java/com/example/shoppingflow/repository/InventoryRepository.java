@@ -24,4 +24,5 @@ public interface InventoryRepository extends JpaRepository<Inventory, InventoryI
     @Async
     CompletableFuture<List<Inventory>> findInventoryByStoreId(String storeId);
 
+
 }
