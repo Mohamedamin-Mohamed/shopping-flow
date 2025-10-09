@@ -9,9 +9,13 @@ import com.example.shoppingflow.model.Order;
 import com.example.shoppingflow.model.OrderItem;
 import com.example.shoppingflow.repository.OrderRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.http.Header;
@@ -20,12 +24,14 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 @Service
 public class OrderService {
     private final OrderRepository orderRepository;
     private final AsyncHttpClient asyncHttpClient;
     private final ObjectMapper objectMapper;
+    private final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
     public OrderService(OrderRepository orderRepository, AsyncHttpClient asyncHttpClient) {
         this.orderRepository = orderRepository;
@@ -34,10 +40,26 @@ public class OrderService {
     }
 
     public CompletableFuture<Order> createOrder(OrderRequest orderRequest) {
-        return orderRepository.saveOrder(buildOrder(orderRequest)).thenApply(order -> {
-            //here loop through the order items and reserve inventory for each item
+        //here create the order if not created previously then loop through the order items and reserve inventory for each item
+        return orderRepository.saveOrder(buildOrder(orderRequest)).thenCompose(order -> {
             inventoryInteractionHelper(order, "reserve");
-            return order;
+            return asyncHttpClient
+                    .preparePost(String.format("/%s/payment/initiate", order.getOrderId().toString()))
+                    .setHeader(Header.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                    .execute().toCompletableFuture().thenApply(response -> {
+                        try {
+                            return objectMapper.readValue(response.getResponseBody(), new TypeReference<Order>() {
+                            });
+                        } catch (JsonProcessingException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+        }).exceptionally(ex -> {
+            if (ex.getCause() instanceof DataIntegrityViolationException) {
+                logger.error("Duplicate order entry with idempotency key: {}", orderRequest.getIdempotencyKey());
+                return orderRepository.findByIdempotencyKey(orderRequest.getIdempotencyKey()).join();
+            }
+            throw new CompletionException(ex);
         });
     }
 
@@ -50,11 +72,25 @@ public class OrderService {
         });
     }
 
+    /*order status to be set to processing would be something to be done by a down-stream service maybe a consumer
+    waiting for an event called OrderCreated then the store or fulfillment centre fulfilling the order and setting
+    order status to processing and so on. */
+
     public CompletableFuture<Order> confirmPayment(UUID orderId) {
         //here we actually perform the actual decrement of inventory for each item
         return orderRepository.findByOrderId(orderId).thenApply(order -> {
             inventoryInteractionHelper(order, "purchase/confirm");
             order.setPaymentStatus(PaymentStatus.CONFIRMED);
+            order.setOrderStatus(OrderStatus.CONFIRMED);
+            return order;
+        });
+    }
+
+    public CompletableFuture<Order> paymentFail(UUID orderId) {
+        //payment failed so release the reserved quantity
+        return orderRepository.findByOrderId(orderId).thenApply(order -> {
+            order.setPaymentStatus(PaymentStatus.FAILED);
+            inventoryInteractionHelper(order, "unreserve");
             return order;
         });
     }
