@@ -23,22 +23,22 @@ public class OrderController {
     private final OrderService orderService;
 
 
-    public OrderController(OrderService orderService) {
+    public OrderController(OrderService orderService){
         this.orderService = orderService;
     }
-
     @PostMapping
     public ResponseEntity<CompletableFuture<Order>> createOrder(@RequestBody OrderRequest orderRequest) throws JsonProcessingException {
         try {
             logger.info("Creating order: {}", objectMapper.writeValueAsString(orderRequest));
             return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(orderRequest));
-        } catch (JsonProcessingException e) {
+        }
+        catch(JsonProcessingException e){
             throw new ClientException("Order creation failed, order request= " + objectMapper.writeValueAsString(orderRequest));
         }
     }
 
     @PostMapping("/{orderId}/payment/initiate")
-    public ResponseEntity<CompletableFuture<Order>> initiatePayment(@PathVariable UUID orderId) {
+    public ResponseEntity<CompletableFuture<Order>> initiatePayment(@PathVariable UUID orderId){
         logger.info("Initiating payment for order id{}", orderId);
         return ResponseEntity.status(HttpStatus.CREATED).body(orderService.initiatePayment(orderId));
     }

@@ -31,7 +31,6 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final AsyncHttpClient asyncHttpClient;
     private final ObjectMapper objectMapper;
-    private final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
     public OrderService(OrderRepository orderRepository, AsyncHttpClient asyncHttpClient) {
         this.orderRepository = orderRepository;
