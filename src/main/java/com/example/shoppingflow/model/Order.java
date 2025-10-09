@@ -10,7 +10,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-@Entity(name = "order")
+@Entity
+@Table(name = "orders", uniqueConstraints = {@UniqueConstraint(columnNames = {"idempotencyKey"})})
 public class Order {
     @Id
     private UUID orderId;
@@ -41,6 +42,8 @@ public class Order {
 
     @Embedded
     private Address shippingAddress;
+    private String idempotencyKey;
+
     private String paymentMethod;
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
@@ -77,6 +80,10 @@ public class Order {
 
     public void setShippingAddress(Address shippingAddress) {
         this.shippingAddress = shippingAddress;
+    }
+
+    public void setIdempotencyKey(String idempotencyKey){
+        this.idempotencyKey = idempotencyKey;
     }
 
     public void setPaymentMethod(String paymentMethod) {
@@ -125,6 +132,10 @@ public class Order {
 
     public Address getShipppingAddress() {
         return shippingAddress;
+    }
+
+    public String getIdempotencyKey(){
+        return idempotencyKey;
     }
 
     public String getPaymentMethod() {
